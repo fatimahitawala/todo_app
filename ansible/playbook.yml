@@ -1,0 +1,30 @@
+---
+- name: Run Django container with nerdctl and insert task
+  hosts: localhost
+  tasks:
+    - name: Build Docker image with nerdctl
+      command: nerdctl build . -t django-todo 
+      args:
+        chdir: /mnt/c/Python/TODO_PROJECT/todo
+    - name: Run Docker container with nerdctl
+      command: nerdctl run -d --name django_todo_container -p 8000:8000 django-todo
+
+    - name: Wait for Django server to be up
+      wait_for:
+        host: localhost
+        port: 8000
+        delay: 10
+        timeout: 300
+        state: started
+
+    - name: Insert task into Django app
+      uri:
+        url: http://localhost:8000/add_task
+        method: POST
+        body: "task=Initial task added by Ansible"
+        body_format: form-urlencoded
+        status_code: 302
+      register: result
+
+    - debug:
+        var: result

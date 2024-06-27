@@ -1,5 +1,8 @@
 from django.shortcuts import get_object_or_404, render,redirect
 from .models import Task
+from django.views.decorators.csrf import csrf_exempt
+
+
 # Create your views here.
 def home(request):
     task=Task.objects.filter(is_completed=False)
@@ -10,6 +13,7 @@ def home(request):
     }
     return render(request,'home-todo.html',context)
 
+@csrf_exempt
 def add_task(request):
     if request.method=='POST':
         task=request.POST.get('task')
